@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!--
+        Thanks to Charlie Marsh & Shubhro Saha for making Syndicate.
+        Thanks to them and gwern.net for design inspiration
+    -->
+    <head>
+        <title>Inside the Physical Dropbox | David Dohan</title>
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans">
+        <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="../static/css/styles.css" rel="stylesheet">
+    </head>
+    <body>
+
+
+    <div id="sidebar">
+            <div id="sidebar-links">
+                <p>
+                <a href="/index" title="index: categorized list of articles">Home</a>
+                <a href="www.github.com" title="Site source">Site</a>
+                <a href="/about" title="Who I am">Me</a>
+                </p>
+                <hr>
+                <hr>
+                <div id="metadata">
+                    <div id="page-created">created:
+                        <br>
+                        <i>2013-09-03</i></div>
+                    <div id="last-modified">modified:
+                        <br>
+                        <i>2013-09-03</i></div>
+                    <br>
+                    <i>status: in progress</i></div>
+                <hr>
+            </div>
+        </div>
+    </div>
+
+    <div id="content">
+        <!--
+meta--title--Inside the Physical Dropbox
+meta--created--2013-09-03
+meta--modified--2013-09-03
+meta--status--in progress
+-->
+
+<h2>Looking Inside the Physical Dropbox</h2>
+
+<!--### The making of a simple 3d scanner-->
+
+<p>[me presenting]</p>
+
+<p>While interning at Dropbox this past summer, I built a "physical dropbox"--a 3d
+laser scanner inside a Dropbox logo like enclosure--over Dropbox's biannual
+hack week with teammates X, X, and X.  A few weeks later, Makerbot announced
+the Makerbot Digitizer - a 3d scanner which works on the same principles.  In
+this post, I go through the basic ideas behind how it functions and how we
+built our own.</p>
+
+<p>To start how, here is a picture of the scanner to see how it is layed out.</p>
+
+<p>[PICTURE]</p>
+
+<h2>The Principle</h2>
+
+<p>At its most basic level, the scanner shoots a laser line onto an object,
+captures an image, and then uses the deformation of the laser line from the
+center of the image to triangulate points on the surface.  When this is done
+along an entire line, we get a slice of the object.  When these slices are
+generated for many small steps through a full rotation of the object, we end up
+with a point cloud.</p>
+
+<p>[a cup - about as basic as you get - a point cloud ]</p>
+
+<p>So how do we actually triangulate the points?  We have a laser, camera, and
+turntable.  We know the distances between each of them, along with the angle
+at the intersection of the center of the cameras image and the laser line.  We
+then capture an image like this:</p>
+
+<p>[GREEN LASER]</p>
+
+<p>Clean up the image by removing the any part of the laser that overshoots the
+object and threshold to get the brightest pixels.</p>
+
+<p>[WHITE LINES]</p>
+
+<p>From this image, we pull out a list of (u,v) image coordinates of the middle
+brightest pixel.</p>
+
+<p>Now comes the only real math with two lines of trigonometry to process this
+list.</p>
+
+<p>For every (u, v) pair at a current turntable rotation of theta, we generate an (x, y, z) point by
+x = u * cos(theta)
+y = v
+z = -u * sin (theta)</p>
+
+<h2>Implementation</h2>
+
+<p>Now for the actual implementation.  I am not going to go into the details of
+every part, but we built our scanner using:</p>
+
+<ul>
+<li>Laptop</li>
+<li>arduino mega</li>
+<li>off the shelf webcam (hd)</li>
+<li>two laser modules</li>
+<li>glass stirring rods to spread the laser into a line</li>
+<li>stepper motor</li>
+<li>stepper controller</li>
+<li>wood, screws, and felt</li>
+<li>Lots of batteries to power the motors and lasers</li>
+</ul>
+
+<p>Software:
++ Python 2.7
++ opencv for capturing and lowlevel processing of images
++ numpy for speeding up image processing</p>
+
+<p>The arduino controls the lasers and stepper motor, and the laptop signals to
+the arduino and manages capturing images.</p>
+
+<p>We originally alternated taking pictures and having the motor take a step, but
+this took much longer than necessary.  Instead, we have the motor do a full
+rotation while the camera takes pictures as fast as it can.  The motor signals
+when it is done, and we process the images with the assumption that the motor
+turned at a uniform rate.  In practice, we found that we usually captured 226
+images per rotation in much less time than 30 seconds per laser.</p>
+
+<p>Here is a video showing a scan in progress.  We added a second laser to
+increase scan quality, and we scanned with one laser at a time to avoid dealing
+with determining which laser line is which.</p>
+
+<p>The resulting pointclouds are output in the ply format, which can be viewed
+in most modelling programs.  We found the meshlab worked well.</p>
+
+<p>Our code can be found at <a href="github.com/dmrd/physical-dropbox">here</a>. Overall,
+the code is fairly modular, but it became significantly more messy when we
+decided to add the second laser at 2am on the Friday.</p>
+
+<h2>Finished Product</h2>
+
+<p>Here are more example scans that we made while building the scanner:</p>
+
+<p>[pics]</p>
+
+<h2>Comparing to the Digitizer</h2>
+
+<h3>Accuracy</h3>
+
+<p>From looking at scans, it appears that the makerbot scanner has much higher
+accuracy.  Overall, this is expected since our mountings and calibrations were
+inexact at best.  The accuracy would likely be dramatically improved by
+machining or 3d printing a mount that precisely controlled the distance and
+angle between the camera and lasers.  Additionally, we did not calibrate our
+camera to account for distortions, instead assuming an orthographic projection</p>
+
+<h3>Light</h3>
+
+<p>The Makerbot Digitizer also appears to have hardware to support scanning in
+daylight.  My suspicion is some sort of polarized filter, but it is also
+possible that increasing the power on our lasers would make it work in light.
+Please let me know if you are aware of how this works.</p>
+
+<h3>Nondiffuse surfaces</h3>
+
+<p>One universal weakness of this technique is that it does not work with
+reflective objects. Makerbot even has a tutorial on how to scan reflective
+objects by coating them in a diffuse powder.  You can see a result of this
+effect in some of our scans where the reflective Dropbox name on the mug is
+visible because the points were not filled in:</p>
+
+<h3>Resulting meshes</h3>
+
+<p>You may notice that our scanner ouputs a pointcloud rather than a filled mesh.
+While we tried various techniques and libraries to triangulate the point cloud
+into a mesh, we found that most automated approaches produced jagged and
+irregular meshes.  The best strategy was to meshify the output in an external
+tool such as meshlab.  Similarly, we also did not attempt to texture the output
+since it would require a fully integrate images -> mesh pipeline (although one
+can store color per vertex rather than as a texture).</p>
+
+<h2>Improvements &amp; Other techniques</h2>
+
+<p>It is possible to improve mesh quality even more by using additional lasers.
+Alternatively, one can use a single laser and grating to split it into many
+beams.</p>
+
+<p>This technique was used to scan <em>David</em> with some variation (not rotating).</p>
+
+<p>Laser scanning as presented here is just one way of scanning objects.  There
+are many of methods for <em>active optical scanning</em>, e.g. systems in which we
+introduce extra light into the scene.  This is in contrast to optical
+techniques such as using the difference between multiple cameras.</p>
+
+<p>Other techniques include structured light scanning, time of flight scanners,
+and light diffusion whatevers-----.  The details of these techniques are
+interesting, but that's a topic for another day.</p>
+
+<h2>Resources</h2>
+
+<p>If you are curious about other similar 3d scanners, take a look at
+<a href="https://github.com/mvhenten/pylatscan">pylatscan</a>.  It includes blueprints to
+build a more polished scanner, along with code.  I have not used it, but it
+appears to be fairly well documented.</p>
+
+<p>Another good resource for understanding different techniques is <a href="http://mesh.brown.edu/byo3d/slides.html">this SIGGRAPH
+course on 3D scanning</a></p>
+
+        <hr />
+        <center>
+            &copy; 2013 David Dohan
+            &sdot;
+            <a target="_blank" href="mailto:ddohan@princeton.edu">Email</a>
+            &sdot;
+            <a target="_blank" href="http://www.facebook.com/ddohan">Facebook</a>
+            &sdot;
+            <a target="_blank" href="http://www.github.com/dmrd">Github</a>
+        </center>
+    </div>
+    </body>
+</html>

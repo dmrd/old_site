@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!--
+        Thanks to Charlie Marsh & Shubhro Saha for making Syndicate.
+        Thanks to them and gwern.net for design inspiration
+    -->
+    <head>
+        <title>{{ title }} | David Dohan</title>
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans">
+        <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="../static/css/styles.css" rel="stylesheet">
+    </head>
+    <body>
+
+
+    <div id="sidebar">
+            <div id="sidebar-links">
+                <p>
+                <a href="/index" title="index: categorized list of articles">Home</a>
+                <a href="www.github.com" title="Site source">Site</a>
+                <a href="/about" title="Who I am">Me</a>
+                </p>
+                <hr>
+                <hr>
+                <div id="metadata">
+                    <div id="page-created">created:
+                        <br>
+                        <i>{{ created }}</i></div>
+                    <div id="last-modified">modified:
+                        <br>
+                        <i>{{ modified }}</i></div>
+                    <br>
+                    <i>status: {{ status }}</i></div>
+                <hr>
+            </div>
+        </div>
+    </div>
+
+    <div id="content">
+        {{ body }}
+        <hr />
+        <center>
+            &copy; 2013 David Dohan
+            &sdot;
+            <a target="_blank" href="mailto:ddohan@princeton.edu">Email</a>
+            &sdot;
+            <a target="_blank" href="http://www.facebook.com/ddohan">Facebook</a>
+            &sdot;
+            <a target="_blank" href="http://www.github.com/dmrd">Github</a>
+        </center>
+    </div>
+    </body>
+</html>
