@@ -1,0 +1,56 @@
+body{
+    font-family:arial, serif;
+    font-size:14px;
+    background-color:#FFF;
+    color:#000;
+    line-height:1.3em;
+}
+
+a {
+	color:#000;
+}
+
+a:visited {
+	color:#000;
+}
+
+h1{
+    font-size:36px;
+    line-height:1.1em;
+    margin-bottom:4px;
+}
+
+h2{
+    font-size:24px;
+    line-height:1.1em;
+    margin-bottom:4px;
+}
+
+#home-container{
+    width:700px;
+    margin:auto;    
+    margin-top:150px;
+    color:#000;
+}
+
+#footer{
+    width:100%;
+    text-align:center;
+    border-top: 3px solid #CCC;
+    padding-top:12px;
+    padding-bottom:12px;
+}
+
+#questions-container{
+    width:700px;
+    margin:auto;    
+    margin-top:25px;
+    color:#000;
+}
+
+#search-container{
+    width:700px;
+    margin:auto;    
+    margin-top:8px;
+    color:#000;
+}

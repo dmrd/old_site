@@ -35,7 +35,8 @@ csv_files = [os.path.join(root, name)
              if post_filter(root, name)]
 
 # set compilation function
-compile_markdown = "ruby utils/gfm.rb %s | perl utils/markdown.pl > temp.txt" if args.gfm else "perl utils/markdown.pl %s > temp.txt"
+compile_markdown = "ruby utils/gfm.rb %s | pandoc -S -o temp.html" if args.gfm else "pandoc -S -o temp.html %s"
+#compile_markdown = "ruby utils/gfm.rb %s | perl utils/markdown.pl > temp.html" if args.gfm else "perl utils/markdown.pl %s > temp.html"
 
 # compress CSS
 if args.minify:
@@ -95,11 +96,11 @@ for file_path in csv_files:
         metadata['date'] = fdate
 
     print("Detected metadata: " + str(metadata))
-    # run the converter and output to a temp.txt
+    # run the converter and output to a temp.html
     os.system(compile_markdown % file_path)
 
-    # now read the output from temp.txt and inject into post.html
-    tempHTML = open("temp.txt", "r").read()
+    # now read the output from temp.html and inject into post.html
+    tempHTML = open("temp.html", "r").read()
 
     productionHTML = templateHTML.replace("{{ body }}", tempHTML)
     for k,v in metadata.items():
@@ -120,6 +121,6 @@ for file_path in csv_files:
     productionFile = open(directory+"/index.html", "w")
     productionFile.write(productionHTML)
 
-if os.path.exists("temp.txt"):
-    os.system("rm temp.txt")
+if os.path.exists("temp.html"):
+    os.system("rm temp.html")
 print("Production complete.")
