@@ -1,7 +1,7 @@
 <!--
 meta--title--Inside the Physical Dropbox
 meta--created--2013-09-03
-meta--modified--2013-09-03
+meta--modified--2013-09-17
 meta--status--in progress
 -->
 
@@ -49,11 +49,11 @@ brightest pixel.
 
 We process these coordinates into a 3d points using two lines of
 trigonometry---the only real math in the process.  For every (u, v) pair at
-a current turntable rotation of Ɵ, we generate an (x, y, z) point as:
+a current turntable rotation of r, we generate an (x, y, z) point as:
 
-+ x = u * cos(Ɵ)
++ x = u * cos(r)
 + y = v
-+ z = -u * sin (Ɵ)
++ z = -u * sin(r)
 
 
 ### Implementation
@@ -64,23 +64,22 @@ every part, but we built our scanner using:
 Hardware:
 
 + Laptop
-+ arduino mega
-+ off the shelf webcam (hd)
-+ two laser modules
-+ glass stirring rods to spread the laser into a line
-+ stepper motor
-+ stepper controller
-+ wood, screws, and felt
++ Arduino mega
++ Webcam
++ Two laser modules
++ Glass stirring rods to spread the laser into a line
++ Stepper motor and controller
++ Wood, screws, and felt to line the box
 + Lots of batteries to power the motors and lasers
 
 Software:
 
 + Python 2.7
-+ opencv for capturing and lowlevel processing of images
-+ numpy for speeding up image processing
++ OpenCV for capturing and low-level processing of images
++ Numpy for speeding up image processing
 
-The arduino controls the lasers and stepper motor, and the laptop signals to
-the arduino and manages capturing images.
+The Arduino controls the lasers and stepper motor, and the laptop signals to
+the Arduino and manages capturing images.
 
 We originally alternated taking pictures and having the motor take a step, but
 this took much longer than necessary.  Instead, we have the motor do a full
@@ -89,7 +88,7 @@ when it is done, and we process the images with the assumption that the motor
 turned at a uniform rate.  In practice, we found that we usually captured 226
 images per rotation in much less time than 30 seconds per laser.
 
-Here is a video showing a scan in progress.  We added a second laser to
+Below is a video showing a scan in progress.  We added a second laser to
 increase scan quality, and we scanned with one laser at a time to avoid dealing
 with determining which laser line is which.
 
@@ -115,6 +114,19 @@ controller can also only capture, only process, or only one laser if desired.
 Here are more example scans that we made while building the scanner:
 
 <img src="/scanner/duck.jpg" width="45%"/>
+<img src="/scanner/honey.png" width="45%"/>
+<img src="/scanner/jones.png" width="45%"/>
+<img src="/scanner/sanitizer.png" width="45%"/>
+<img src="/scanner/bobblehead.png" width="45%"/>
+
+It turns out that laser line scanning doesn't work well with highly reflective
+or transparent material, so we ended up with a pretty neat effect when we
+scanned such materials.  Three of the non-duck scans above are of a honey bottle,
+Jones soda bottle, and hand sanitizer.  The labels on the bottles are clearly
+visible, as are the outlines of words on the label.  This results from parts of the label
+absorbing the laser line.
+
+The last scan is a certain bobblehead that Dropboxers may recognize.
 
 ### Comparing to the Digitizer
 
@@ -139,9 +151,8 @@ One universal weakness of this technique is that it does not work with
 reflective objects. Makerbot even has a tutorial on how to scan reflective
 objects by coating them in a diffuse powder.  You can see a result of this
 effect in some of our scans where the reflective Dropbox name on the mug is
-visible because the points were not filled in:
-
-<!-- IMAGE -->
+visible because the points were not filled in.  This is the same effect as on
+the labels in the example images.
 
 #### Resulting meshes
 You may notice that our scanner ouputs a pointcloud rather than a filled mesh.
@@ -170,7 +181,9 @@ dots for the Kinect, is projected onto the surface and the deformation
 observed.
 + Time of flight scanners use the time for a beam of light to bounce off an
 object and return to the scanner to calculate depth.
-+ Light diffusion
++ Light diffusion scanners flash lights from many angles and take a picture.
+For diffuse surfaces, the resulting illumination can be used to reconstruct the
+surface normals
 
 The details of these techniques are interesting, but that's a topic for another day.
 

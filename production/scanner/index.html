@@ -39,7 +39,7 @@
                         <i>2013-09-03</i></div>
                     <div id="last-modified">modified:
                         <br>
-                        <i>2013-09-03</i></div>
+                        <i>2013-09-17</i></div>
                     <br>
                     <i>status: in progress</i></div>
                 <hr>
@@ -51,7 +51,7 @@
         <!--
 meta--title--Inside the Physical Dropbox
 meta--created--2013-09-03
-meta--modified--2013-09-03
+meta--modified--2013-09-17
 meta--status--in progress
 -->
 
@@ -74,35 +74,34 @@ meta--status--in progress
 <img src="/scanner/threshold.jpg" />
 </div>
 <p>From this image, we pull out a list of (u,v) image coordinates of the middle brightest pixel.</p>
-<p>We process these coordinates into a 3d points using two lines of trigonometry—the only real math in the process. For every (u, v) pair at a current turntable rotation of Ɵ, we generate an (x, y, z) point as:</p>
+<p>We process these coordinates into a 3d points using two lines of trigonometry—the only real math in the process. For every (u, v) pair at a current turntable rotation of r, we generate an (x, y, z) point as:</p>
 <ul>
-<li>x = u * cos(Ɵ)</li>
+<li>x = u * cos(r)</li>
 <li>y = v</li>
-<li>z = -u * sin (Ɵ)</li>
+<li>z = -u * sin(r)</li>
 </ul>
 <h3 id="implementation">Implementation</h3>
 <p>Now comes the actual implementation. I am not going to go into the details of every part, but we built our scanner using:</p>
 <p>Hardware:</p>
 <ul>
 <li>Laptop</li>
-<li>arduino mega</li>
-<li>off the shelf webcam (hd)</li>
-<li>two laser modules</li>
-<li>glass stirring rods to spread the laser into a line</li>
-<li>stepper motor</li>
-<li>stepper controller</li>
-<li>wood, screws, and felt</li>
+<li>Arduino mega</li>
+<li>Webcam</li>
+<li>Two laser modules</li>
+<li>Glass stirring rods to spread the laser into a line</li>
+<li>Stepper motor and controller</li>
+<li>Wood, screws, and felt to line the box</li>
 <li>Lots of batteries to power the motors and lasers</li>
 </ul>
 <p>Software:</p>
 <ul>
 <li>Python 2.7</li>
-<li>opencv for capturing and lowlevel processing of images</li>
-<li>numpy for speeding up image processing</li>
+<li>OpenCV for capturing and low-level processing of images</li>
+<li>Numpy for speeding up image processing</li>
 </ul>
-<p>The arduino controls the lasers and stepper motor, and the laptop signals to the arduino and manages capturing images.</p>
+<p>The Arduino controls the lasers and stepper motor, and the laptop signals to the Arduino and manages capturing images.</p>
 <p>We originally alternated taking pictures and having the motor take a step, but this took much longer than necessary. Instead, we have the motor do a full rotation while the camera takes pictures as fast as it can. The motor signals when it is done, and we process the images with the assumption that the motor turned at a uniform rate. In practice, we found that we usually captured 226 images per rotation in much less time than 30 seconds per laser.</p>
-<p>Here is a video showing a scan in progress. We added a second laser to increase scan quality, and we scanned with one laser at a time to avoid dealing with determining which laser line is which.</p>
+<p>Below is a video showing a scan in progress. We added a second laser to increase scan quality, and we scanned with one laser at a time to avoid dealing with determining which laser line is which.</p>
 <iframe src="https://www.facebook.com/video/embed?video_id=10100102584262122"
 width="100%" height="400" frameborder="0"></iframe>
 
@@ -112,16 +111,16 @@ width="100%" height="400" frameborder="0"></iframe>
 <p>This captures images of 1 rotation with both lasers and processes them. The controller can also only capture, only process, or only one laser if desired.</p>
 <h3 id="results">Results</h3>
 <p>Here are more example scans that we made while building the scanner:</p>
-<p><img src="/scanner/duck.jpg" width="45%"/></p>
+<p><img src="/scanner/duck.jpg" width="45%"/> <img src="/scanner/honey.png" width="45%"/> <img src="/scanner/jones.png" width="45%"/> <img src="/scanner/sanitizer.png" width="45%"/> <img src="/scanner/bobblehead.png" width="45%"/></p>
+<p>It turns out that laser line scanning doesn’t work well with highly reflective or transparent material, so we ended up with a pretty neat effect when we scanned such materials. Three of the non-duck scans above are of a honey bottle, Jones soda bottle, and hand sanitizer. The labels on the bottles are clearly visible, as are the outlines of words on the label. This results from parts of the label absorbing the laser line.</p>
+<p>The last scan is a certain bobblehead that Dropboxers may recognize.</p>
 <h3 id="comparing-to-the-digitizer">Comparing to the Digitizer</h3>
 <h4 id="accuracy">Accuracy</h4>
 <p>From looking at scans, it appears that the makerbot scanner has much higher accuracy. Overall, this is expected since our mountings and calibrations were inexact at best. The accuracy would likely be dramatically improved by machining or 3d printing a mount that precisely controlled the distance and angle between the camera and lasers. Additionally, we did not calibrate our camera to account for distortions.</p>
 <h4 id="daylight">Daylight</h4>
 <p>The Makerbot Digitizer also appears to have hardware to support scanning in daylight. My suspicion is some sort of polarized filter, but it is also possible that increasing the power on our lasers would make it work in light. Please let me know if you are aware of how this works.</p>
 <h4 id="nondiffuse-surfaces">Nondiffuse surfaces</h4>
-<p>One universal weakness of this technique is that it does not work with reflective objects. Makerbot even has a tutorial on how to scan reflective objects by coating them in a diffuse powder. You can see a result of this effect in some of our scans where the reflective Dropbox name on the mug is visible because the points were not filled in:</p>
-<!-- IMAGE -->
-
+<p>One universal weakness of this technique is that it does not work with reflective objects. Makerbot even has a tutorial on how to scan reflective objects by coating them in a diffuse powder. You can see a result of this effect in some of our scans where the reflective Dropbox name on the mug is visible because the points were not filled in. This is the same effect as on the labels in the example images.</p>
 <h4 id="resulting-meshes">Resulting meshes</h4>
 <p>You may notice that our scanner ouputs a pointcloud rather than a filled mesh. While we tried various techniques and libraries to triangulate the point cloud into a mesh, we found that most automated approaches produced jagged and irregular meshes. The best strategy was to meshify the output in an external tool such as meshlab. Similarly, we also did not attempt to texture the output since it would require a fully integrate images -&gt; mesh pipeline (although one can store color per vertex rather than as a texture).</p>
 <h3 id="improvements-other-techniques">Improvements &amp; Other techniques</h3>
@@ -130,7 +129,7 @@ width="100%" height="400" frameborder="0"></iframe>
 <ul>
 <li>Structured light scanning in which a structured pattern, such as a grid of dots for the Kinect, is projected onto the surface and the deformation observed.</li>
 <li>Time of flight scanners use the time for a beam of light to bounce off an object and return to the scanner to calculate depth.</li>
-<li>Light diffusion</li>
+<li>Light diffusion scanners flash lights from many angles and take a picture. For diffuse surfaces, the resulting illumination can be used to reconstruct the surface normals</li>
 </ul>
 <p>The details of these techniques are interesting, but that’s a topic for another day.</p>
 <h3 id="resources">Resources</h3>
